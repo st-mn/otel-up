@@ -1,0 +1,150 @@
+# Default values for otel-up.
+# This is a YAML-formatted file.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# =============================================================================
+# OpenTelemetry Collector
+# =============================================================================
+otelcollector:
+  enabled: true
+  replicas: 1
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    grpcPort: 4317
+    httpPort: 4318
+    metricsPort: 8889
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # Override the collector config (yaml). When empty the default pipeline is used.
+  config: ""
+
+# =============================================================================
+# Prometheus
+# =============================================================================
+prometheus:
+  enabled: true
+  replicas: 1
+  image:
+    repository: prom/prometheus
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 9090
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+  scrapeInterval: 15s
+
+# =============================================================================
+# Loki
+# =============================================================================
+loki:
+  enabled: true
+  replicas: 1
+  image:
+    repository: grafana/loki
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3100
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+
+# =============================================================================
+# Tempo
+# =============================================================================
+tempo:
+  enabled: true
+  replicas: 1
+  image:
+    repository: grafana/tempo
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    httpPort: 3200
+    grpcPort: 4317
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+
+# =============================================================================
+# Grafana
+# =============================================================================
+grafana:
+  enabled: true
+  replicas: 1
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  adminUser: admin
+  adminPassword: admin
+  anonymousAccess:
+    enabled: true
+    role: Admin
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  persistence:
+    enabled: false
+    size: 5Gi
+    storageClass: ""
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: grafana.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []

@@ -1,0 +1,17 @@
+{{- if .Values.loki.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "loki") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 4 }}
+spec:
+  type: {{ .Values.loki.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.loki.service.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 4 }}
+{{- end }}

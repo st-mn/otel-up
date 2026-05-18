@@ -1,0 +1,25 @@
+{{- if .Values.otelcollector.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "otelcollector") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 4 }}
+spec:
+  type: {{ .Values.otelcollector.service.type }}
+  ports:
+    - name: otlp-grpc
+      port: {{ .Values.otelcollector.service.grpcPort }}
+      targetPort: otlp-grpc
+      protocol: TCP
+    - name: otlp-http
+      port: {{ .Values.otelcollector.service.httpPort }}
+      targetPort: otlp-http
+      protocol: TCP
+    - name: metrics
+      port: {{ .Values.otelcollector.service.metricsPort }}
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 4 }}
+{{- end }}

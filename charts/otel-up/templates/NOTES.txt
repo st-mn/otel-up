@@ -1,0 +1,31 @@
+otel-up has been installed in namespace {{ .Release.Namespace }}.
+
+Components deployed:
+{{- if .Values.otelcollector.enabled }}
+  - OpenTelemetry Collector (OTLP gRPC: {{ .Values.otelcollector.service.grpcPort }}, HTTP: {{ .Values.otelcollector.service.httpPort }})
+{{- end }}
+{{- if .Values.prometheus.enabled }}
+  - Prometheus (port {{ .Values.prometheus.service.port }})
+{{- end }}
+{{- if .Values.loki.enabled }}
+  - Loki (port {{ .Values.loki.service.port }})
+{{- end }}
+{{- if .Values.tempo.enabled }}
+  - Tempo (port {{ .Values.tempo.service.httpPort }})
+{{- end }}
+{{- if .Values.grafana.enabled }}
+  - Grafana (port {{ .Values.grafana.service.port }})
+{{- end }}
+
+To access Grafana locally:
+
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "otel-up.fullname" . }}-grafana {{ .Values.grafana.service.port }}:{{ .Values.grafana.service.port }}
+
+Then open: http://localhost:{{ .Values.grafana.service.port }}
+  Username: {{ .Values.grafana.adminUser }}
+  Password: {{ .Values.grafana.adminPassword }}
+
+Send telemetry from your applications to the OTel Collector at:
+
+  OTLP gRPC: {{ include "otel-up.fullname" . }}-otelcollector.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.otelcollector.service.grpcPort }}
+  OTLP HTTP: http://{{ include "otel-up.fullname" . }}-otelcollector.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.otelcollector.service.httpPort }}

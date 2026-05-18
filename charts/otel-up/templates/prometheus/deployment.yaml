@@ -1,0 +1,93 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "prometheus") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "prometheus") .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.prometheus.replicas }}
+  selector:
+    matchLabels:
+      {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "prometheus") .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "prometheus") .) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: prometheus
+          image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+          imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.enable-lifecycle"
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+              readOnly: true
+            - name: storage
+              mountPath: /prometheus
+          resources:
+            {{- toYaml .Values.prometheus.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "otel-up.componentFullname" (merge (dict "component" "prometheus") .) }}
+        - name: storage
+          {{- if .Values.prometheus.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "otel-up.componentFullname" (merge (dict "component" "prometheus") .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "prometheus") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "prometheus") .) | nindent 4 }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.prometheus.scrapeInterval }}
+      evaluation_interval: {{ .Values.prometheus.scrapeInterval }}
+
+    scrape_configs:
+      {{- if .Values.otelcollector.enabled }}
+      - job_name: 'otel-collector'
+        static_configs:
+          - targets: ['{{ include "otel-up.componentFullname" (merge (dict "component" "otelcollector") .) }}:{{ .Values.otelcollector.service.metricsPort }}']
+      {{- end }}
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+{{- if .Values.prometheus.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "prometheus") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "prometheus") .) | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.persistence.size }}
+  {{- if .Values.prometheus.persistence.storageClass }}
+  storageClassName: {{ .Values.prometheus.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+{{- end }}
