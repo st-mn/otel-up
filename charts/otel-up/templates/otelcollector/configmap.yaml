@@ -1,0 +1,71 @@
+{{- if .Values.otelcollector.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "otelcollector") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 4 }}
+data:
+  config.yaml: |
+    {{- if .Values.otelcollector.config }}
+    {{- .Values.otelcollector.config | nindent 4 }}
+    {{- else }}
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        timeout: 5s
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 512
+        spike_limit_mib: 128
+      resourcedetection:
+        detectors: [env, system]
+        timeout: 5s
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        namespace: otel
+      {{- if .Values.loki.enabled }}
+      loki:
+        endpoint: "http://{{ include "otel-up.componentFullname" (merge (dict "component" "loki") .) }}:{{ .Values.loki.service.port }}/loki/api/v1/push"
+        default_labels_enabled:
+          exporter: false
+          job: true
+      {{- end }}
+      {{- if .Values.tempo.enabled }}
+      otlp/tempo:
+        endpoint: "{{ include "otel-up.componentFullname" (merge (dict "component" "tempo") .) }}:{{ .Values.tempo.service.grpcPort }}"
+        tls:
+          insecure: true
+      {{- end }}
+      debug:
+        verbosity: basic
+
+    service:
+      pipelines:
+        {{- if .Values.tempo.enabled }}
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlp/tempo]
+        {{- end }}
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch, resourcedetection]
+          exporters: [prometheus]
+        {{- if .Values.loki.enabled }}
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [loki]
+        {{- end }}
+    {{- end }}
+{{- end }}

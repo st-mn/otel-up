@@ -1,0 +1,50 @@
+{{- if .Values.otelcollector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "otelcollector") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.otelcollector.replicas }}
+  selector:
+    matchLabels:
+      {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "otelcollector") .) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/otelcollector/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: otelcollector
+          image: "{{ .Values.otelcollector.image.repository }}:{{ .Values.otelcollector.image.tag }}"
+          imagePullPolicy: {{ .Values.otelcollector.image.pullPolicy }}
+          args:
+            - "--config=/etc/otelcol/config.yaml"
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: metrics
+              containerPort: 8889
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol
+              readOnly: true
+          resources:
+            {{- toYaml .Values.otelcollector.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "otel-up.componentFullname" (merge (dict "component" "otelcollector") .) }}
+{{- end }}

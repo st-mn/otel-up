@@ -1,0 +1,63 @@
+{{- if .Values.loki.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "loki") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.loki.replicas }}
+  selector:
+    matchLabels:
+      {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: loki
+          image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
+          imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
+          args:
+            - "-config.file=/etc/loki/local-config.yaml"
+          ports:
+            - name: http
+              containerPort: 3100
+              protocol: TCP
+          volumeMounts:
+            - name: storage
+              mountPath: /loki
+          resources:
+            {{- toYaml .Values.loki.resources | nindent 12 }}
+      volumes:
+        - name: storage
+          {{- if .Values.loki.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "otel-up.componentFullname" (merge (dict "component" "loki") .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- if .Values.loki.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "otel-up.componentFullname" (merge (dict "component" "loki") .) }}
+  labels:
+    {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "loki") .) | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.loki.persistence.size }}
+  {{- if .Values.loki.persistence.storageClass }}
+  storageClassName: {{ .Values.loki.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+{{- end }}
