@@ -1,2 +1,30 @@
 apiVersion: v1
-entries: {}
+entries:
+  otel-up:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-05-20T12:15:28.145886226Z"
+    description: One-command OpenTelemetry + Grafana observability stack for Kubernetes
+    digest: c79f578fc2c0510b01fda1e9b94070d02894cad3b848c4ae3565c9f37dc4eed6
+    home: https://github.com/st-mn/otel-up
+    keywords:
+    - opentelemetry
+    - observability
+    - grafana
+    - prometheus
+    - loki
+    - tempo
+    - tracing
+    - metrics
+    - logs
+    maintainers:
+    - name: st-mn
+      url: https://github.com/st-mn
+    name: otel-up
+    sources:
+    - https://github.com/st-mn/otel-up
+    type: application
+    urls:
+    - https://github.com/st-mn/otel-up/releases/download/otel-up-0.1.0/otel-up-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-05-20T12:15:28.145891466Z"
