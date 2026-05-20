@@ -14,7 +14,6 @@ spec:
     metadata:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "grafana") .) | nindent 8 }}
-      annotations:
    spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
