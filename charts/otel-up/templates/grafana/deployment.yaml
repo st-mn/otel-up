@@ -14,9 +14,9 @@ spec:
     metadata:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "grafana") .) | nindent 8 }}
-     spec:
+      spec:
         containers:
-          - name: grafana
+          - name: grafanah
             image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
             imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
             env:
