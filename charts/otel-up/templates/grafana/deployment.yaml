@@ -15,8 +15,7 @@ spec:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "grafana") .) | nindent 8 }}
       annotations:
-        checksum/datasources: {{ include (print $.Template.BasePath "/grafana/deployment.yaml") . | sha256sum }}
-    spec:
+   spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
