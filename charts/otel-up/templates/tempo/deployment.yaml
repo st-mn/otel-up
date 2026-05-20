@@ -15,8 +15,7 @@ spec:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "tempo") .) | nindent 8 }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/tempo/deployment.yaml") . | sha256sum }}
-    spec:
+   spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
