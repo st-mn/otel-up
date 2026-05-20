@@ -15,10 +15,6 @@ spec:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "grafana") .) | nindent 8 }}
    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: grafana
           image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
