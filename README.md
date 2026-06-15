@@ -2,7 +2,7 @@
 
 One-command OpenTelemetry + Grafana observability stack with automatic app instrumentation.
 
-Spin up a full production-grade observability stack on any Ubuntu server in under 5 minutes — or deploy it to Kubernetes with the bundled Helm chart. Automatically instruments your Node.js, Python, Go, or Java app with no code changes required.
+Spin up a full production-grade observability stack on any Ubuntu server in under 5 minutes w/ Docker — or deploy it to Kubernetes with the bundled Helm chart. Automatically instruments your Node.js, Python, Go, or Java app.
 
 ## What it deploys
 
@@ -16,7 +16,7 @@ Spin up a full production-grade observability stack on any Ubuntu server in unde
 
 All services are pre-wired together and provisioned automatically.
 
-## Quick start (Ubuntu / Docker)
+## Option 1 - Singleton Spin Up: Usage with Ubuntu / Docker
 
 ```bash
 # Download scripts
@@ -30,7 +30,7 @@ bash otelsetup.sh /path/to/your/app
 # Grafana URL is printed at the end
 ```
 
-## Helm Chart (Kubernetes)
+## Option 2 - Distributed Spin Up: Usage with Helm Chart / Kubernetes
 
 For Kubernetes deployments, the chart is published to GitHub Pages and can be installed directly:
 
