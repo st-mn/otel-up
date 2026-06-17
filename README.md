@@ -32,18 +32,16 @@ bash otelsetup.sh /path/to/your/app
 
 ## Option 2 - Distributed Spin Up: Usage with Helm Chart / Kubernetes
 
-For Kubernetes deployments, the chart is published to GitHub Pages and can be installed directly:
+For Kubernetes deployments, install the chart from this repository clone directly:
 
 ```bash
-helm repo add otel-up https://st-mn.github.io/otel-up
-helm repo update
-helm install otel-up otel-up/otel-up
+helm install otel-up ./charts/otel-up
 ```
 
 To install in a dedicated namespace:
 
 ```bash
-helm install otel-up otel-up/otel-up --namespace observability --create-namespace
+helm install otel-up ./charts/otel-up --namespace observability --create-namespace
 ```
 
 Access Grafana:
@@ -65,7 +63,7 @@ http://otel-up-otelcollector.<namespace>.svc.cluster.local:4318   # OTLP HTTP
 | Key | Default | Description |
 |-----|---------|-------------|
 | `otelcollector.enabled` | `true` | Deploy the OTel Collector |
-| `otelcollector.image.tag` | `latest` | Collector image tag |
+| `otelcollector.image.tag` | `0.111.0` | Collector image tag |
 | `otelcollector.resources` | see values | CPU/memory limits & requests |
 | `otelcollector.config` | `""` | Raw collector config — overrides default pipeline |
 | `prometheus.enabled` | `true` | Deploy Prometheus |
@@ -87,7 +85,7 @@ http://otel-up-otelcollector.<namespace>.svc.cluster.local:4318   # OTLP HTTP
 To customize, pass `--set key=value` or use a values file:
 
 ```bash
-helm install otel-up otel-up/otel-up -f my-values.yaml
+helm install otel-up ./charts/otel-up -f my-values.yaml
 ```
 
 > The shell scripts (`otelsetup.sh`, `otelteardown.sh`) are for bare Ubuntu servers using Docker Compose. The Helm chart in `charts/otel-up/` is the equivalent for Kubernetes.

@@ -63,3 +63,26 @@ Component fullname.
 {{- define "otel-up.componentFullname" -}}
 {{- printf "%s-%s" (include "otel-up.fullname" .) .component | trunc 63 | trimSuffix "-" }}
 {{- end }}
+
+{{/*
+Tempo configuration block.
+*/}}
+{{- define "otel-up.tempoConfig" -}}
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo/blocks
+    wal:
+      path: /tmp/tempo/wal
+{{- end }}

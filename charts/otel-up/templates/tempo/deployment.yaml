@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "tempo") .) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include "otel-up.tempoConfig" . | sha256sum }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -60,30 +62,7 @@ metadata:
     {{- include "otel-up.componentSelectorLabels" (merge (dict "component" "tempo") .) | nindent 4 }}
 data:
   tempo.yaml: |
-    server:
-      http_listen_port: 3200
-
-    distributor:
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-              endpoint: 0.0.0.0:4317
-
-    ingester:
-      max_block_duration: 5m
-
-    compactor:
-      compaction:
-        block_retention: 48h
-
-    storage:
-      trace:
-        backend: local
-        local:
-          path: /tmp/tempo/blocks
-        wal:
-          path: /tmp/tempo/wal
+    {{- include "otel-up.tempoConfig" . | nindent 4 }}
 {{- if .Values.tempo.persistence.enabled }}
 ---
 apiVersion: v1
