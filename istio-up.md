@@ -1,11 +1,4 @@
-# Istio + Hubble + Kiali Scripts
-
-This file contains two scripts:
-
-- up script: installs Cilium (with Hubble), Istio, and Kiali
-- teardown script: removes Kiali, Istio, and Cilium cleanly
-
-## Up Script
+# istio-up
 
 ```bash
 #!/usr/bin/env bash
@@ -78,7 +71,7 @@ echo "Hubble Dashboard: http://localhost:8081"
 echo "Kiali Dashboard:  http://localhost:20001"
 ```
 
-## Teardown Script
+# istio-down
 
 ```bash
 #!/usr/bin/env bash
@@ -118,8 +111,3 @@ kubectl delete namespace istio-system --ignore-not-found=true
 
 echo "Teardown complete."
 ```
-
-## Quick Usage
-
-- Save the up script section to a shell file and run it to deploy.
-- Save the teardown section to a shell file and run it to remove everything.
