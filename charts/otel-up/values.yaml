@@ -148,3 +148,33 @@ grafana:
           - path: /
             pathType: Prefix
     tls: []
+
+# ── NVIDIA GPU Operator ────────────────────────────────────────────────────────
+# Deploys drivers, container toolkit, device plugin, DCGM Exporter, MIG manager
+gpu-operator:
+  enabled: false
+  driver:
+    enabled: true
+  toolkit:
+    enabled: true
+  devicePlugin:
+    enabled: true
+  dcgmExporter:
+    enabled: true
+  mig:
+    strategy: single
+
+# ── GPU metrics scraping ───────────────────────────────────────────────────────
+gpuMetrics:
+  enabled: false
+  scrapeInterval: 15s
+
+# ── GPU Grafana dashboard ──────────────────────────────────────────────────────
+gpuDashboard:
+  enabled: false
+
+# ── GPU alerting rules ─────────────────────────────────────────────────────────
+gpuAlerts:
+  enabled: false
+  utilizationThreshold: 95
+  memoryThreshold: 90

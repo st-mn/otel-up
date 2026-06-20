@@ -2,21 +2,26 @@ apiVersion: v2
 name: otel-up
 description: One-command OpenTelemetry + Grafana observability stack for Kubernetes
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.0.0"
 keywords:
-  - opentelemetry
-  - observability
-  - grafana
-  - prometheus
-  - loki
-  - tempo
-  - tracing
-  - metrics
-  - logs
+- opentelemetry
+- observability
+- grafana
+- prometheus
+- loki
+- tempo
+- tracing
+- metrics
+- logs
 home: https://github.com/st-mn/otel-up
 sources:
-  - https://github.com/st-mn/otel-up
+- https://github.com/st-mn/otel-up
 maintainers:
-  - name: st-mn
-    url: https://github.com/st-mn
+- name: st-mn
+  url: https://github.com/st-mn
+dependencies:
+  - name: gpu-operator
+    version: "v24.9.2"
+    repository: https://helm.ngc.nvidia.com/nvidia
+    condition: gpu-operator.enabled
