@@ -48,14 +48,14 @@ Access Grafana:
 
 ```bash
 kubectl port-forward svc/otel-up-grafana 3000:3000
-# open http://localhost:3000  (admin / admin)
+# open http://localhost:3000 (admin / admin)
 ```
 
 Send telemetry from in-cluster apps to:
 
 ```
-otel-up-otelcollector.<namespace>.svc.cluster.local:4317   # OTLP gRPC
-http://otel-up-otelcollector.<namespace>.svc.cluster.local:4318   # OTLP HTTP
+otel-up-otelcollector.<namespace>.svc.cluster.local:4317 # OTLP gRPC
+http://otel-up-otelcollector.<namespace>.svc.cluster.local:4318 # OTLP HTTP
 ```
 
 ### Key values.yaml options
@@ -117,6 +117,55 @@ For the Helm chart:
 helm uninstall otel-up
 ```
 
+## GPU Monitoring (NVIDIA)
+
+Enable full GPU observability — GPU Operator, DCGM Exporter, Prometheus scraping, Grafana dashboard, and alerting rules — in one command:
+
+```sh
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
+helm install otel-up otel-up/otel-up \
+  --set gpu-operator.enabled=true \
+  --set gpuMetrics.enabled=true \
+  --set gpuDashboard.enabled=true \
+  --set gpuAlerts.enabled=true \
+  --namespace observability \
+  --create-namespace
+```
+
+This deploys:
+
+| Component | What it does |
+|-----------|-------------|
+| **NVIDIA GPU Operator** | Installs drivers, container toolkit, device plugin, and DCGM Exporter on every GPU node automatically |
+| **DCGM Exporter** | Exposes GPU metrics at `:9400/metrics`, scraped by Prometheus every 15s |
+| **Prometheus** | Stores GPU metrics time-series |
+| **Grafana** | Pre-loaded GPU dashboard (utilization, memory, power, temperature, tensor core, NVLink) |
+| **Alert rules** | GPU utilization > 95%, memory > 90%, XID errors (driver crash), thermal throttling |
+
+### Key GPU metrics collected
+
+| Metric | Description |
+|--------|-------------|
+| `DCGM_FI_DEV_GPU_UTIL` | GPU compute utilization (%) |
+| `DCGM_FI_DEV_FB_USED` | Framebuffer memory used (MiB) |
+| `DCGM_FI_DEV_FB_FREE` | Framebuffer memory free (MiB) |
+| `DCGM_FI_DEV_POWER_USAGE` | Power draw (W) |
+| `DCGM_FI_DEV_SM_CLOCK` | Streaming multiprocessor clock (MHz) |
+| `DCGM_FI_DEV_MEMORY_CLOCK` | Memory clock (MHz) |
+| `DCGM_FI_DEV_GPU_TEMP` | GPU temperature (°C) |
+| `DCGM_FI_DEV_THERMAL_VIOLATION_COUNT` | Thermal throttling events |
+| `DCGM_FI_DEV_XID_ERRORS` | GPU driver/hardware errors (critical) |
+| `DCGM_FI_PROF_PIPE_TENSOR_ACTIVE` | Tensor core utilization (ratio) |
+| `DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL` | NVLink bandwidth (MB/s) |
+| `DCGM_FI_PROF_DRAM_ACTIVE` | DRAM active ratio |
+
+### Requirements for GPU monitoring
+- Kubernetes nodes with NVIDIA GPUs (A100, H100, or any NVIDIA data-centre GPU)
+- Ubuntu 20.04 or 22.04 on GPU nodes (required by GPU Operator driver installer)
+- GPU Operator installs drivers automatically if not present
+
 ## Requirements
 
 **Shell-script flow:**
@@ -140,9 +189,9 @@ helm uninstall otel-up
 
 ```
 Your App
-   |
-   +--> OTel Collector (4317/4318)
-              +--> Prometheus --> Grafana (metrics)
-              +--> Loki       --> Grafana (logs)
-              +--> Tempo      --> Grafana (traces)
+|
++--> OTel Collector (4317/4318)
+     +--> Prometheus --> Grafana (metrics)
+     +--> Loki --> Grafana (logs)
+     +--> Tempo --> Grafana (traces)
 ```
