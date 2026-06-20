@@ -1,0 +1,49 @@
+{{- if and .Values.gpuAlerts.enabled .Values.prometheus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-up.fullname" . }}-gpu-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-up.labels" . | nindent 4 }}
+data:
+  gpu-alerts.yaml: |
+    groups:
+      - name: gpu
+        rules:
+          - alert: GPUHighUtilization
+            expr: DCGM_FI_DEV_GPU_UTIL > {{ .Values.gpuAlerts.utilizationThreshold }}
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "GPU utilization above {{ .Values.gpuAlerts.utilizationThreshold }}% on {{ "{{" }} $labels.instance {{ "}}" }}"
+              description: "GPU {{ "{{" }} $labels.gpu {{ "}}" }} has sustained high utilization. Check for runaway workloads."
+
+          - alert: GPUMemoryHigh
+            expr: DCGM_FI_DEV_FB_USED / (DCGM_FI_DEV_FB_USED + DCGM_FI_DEV_FB_FREE) * 100 > {{ .Values.gpuAlerts.memoryThreshold }}
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "GPU memory above {{ .Values.gpuAlerts.memoryThreshold }}% on {{ "{{" }} $labels.instance {{ "}}" }}"
+              description: "GPU {{ "{{" }} $labels.gpu {{ "}}" }} memory pressure may cause OOM eviction."
+
+          - alert: GPUXidError
+            expr: increase(DCGM_FI_DEV_XID_ERRORS[5m]) > 0
+            for: 0m
+            labels:
+              severity: critical
+            annotations:
+              summary: "GPU XID error on {{ "{{" }} $labels.instance {{ "}}" }}"
+              description: "XID errors indicate GPU driver or hardware faults. Immediate investigation required."
+
+          - alert: GPUThermalThrottling
+            expr: increase(DCGM_FI_DEV_THERMAL_VIOLATION_COUNT[5m]) > 0
+            for: 0m
+            labels:
+              severity: warning
+            annotations:
+              summary: "GPU thermal throttling on {{ "{{" }} $labels.instance {{ "}}" }}"
+              description: "GPU {{ "{{" }} $labels.gpu {{ "}}" }} is throttling due to thermal limits. Check cooling."
+{{- end }}
