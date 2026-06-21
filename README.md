@@ -1,6 +1,6 @@
 # otel-up
 
-One-command OpenTelemetry + Grafana observability stack with automatic app instrumentation.
+Automated Observability Provisioning - One-command OpenTelemetry + Grafana observability stack with automatic app instrumentation.
 
 Spin up a full production-grade observability stack on any Ubuntu server in under 5 minutes w/ Docker — or deploy it to Kubernetes with the bundled Helm chart. Automatically instruments your Node.js, Python, Go, or Java app.
 
